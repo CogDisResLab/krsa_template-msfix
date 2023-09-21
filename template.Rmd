@@ -39,8 +39,6 @@ library(tidyverse)
 
 library(gt)
 library(furrr)
-
-run_prefix <- "krsa"
 ```
 
 # Introduction
