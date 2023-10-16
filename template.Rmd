@@ -63,21 +63,21 @@ Designing the placement of the samples on the chips and arrays is important to c
 #| fig-height: 4
 
 tt <- tibble(
-  num = rep(c(3.5,2.5,1.5,0.5),3),
-  chips = rep(c(2,5,8),each=4),
-  colr = c(rep(1,12)),
+  num = rep(c(3.5, 2.5, 1.5, 0.5), 3),
+  chips = rep(c(2, 5, 8), each = 4),
+  colr = c(rep(1, 12)),
   nms = rep(LETTERS[1:4], 3)
 )
 rundes <- ggplot() +
-  geom_rect(aes(xmin=1, xmax=3, ymin=0,ymax=4), fill="gray30") +
-  geom_rect(aes(xmin=4, xmax=6, ymin=0,ymax=4), fill="gray30") +
-  geom_rect(aes(xmin=7, xmax=9, ymin=0,ymax=4), fill="gray30") +
-  xlim(0,10) + 
-  theme_void() 
+  geom_rect(aes(xmin = 1, xmax = 3, ymin = 0, ymax = 4), fill = "gray30") +
+  geom_rect(aes(xmin = 4, xmax = 6, ymin = 0, ymax = 4), fill = "gray30") +
+  geom_rect(aes(xmin = 7, xmax = 9, ymin = 0, ymax = 4), fill = "gray30") +
+  xlim(0, 10) +
+  theme_void()
 
-rundes + geom_point(data = tt, aes(chips, num,color=factor(colr)), size = 13, show.legend = F) +
-  geom_text(data = tt, aes(chips,num,label = nms), size = 1.6) +
-  scale_color_manual(values=c("green3", "red3"))
+rundes + geom_point(data = tt, aes(chips, num, color = factor(colr)), size = 13, show.legend = F) +
+  geom_text(data = tt, aes(chips, num, label = nms), size = 1.6) +
+  scale_color_manual(values = c("green3", "red3"))
 ```
 
 # Results
@@ -100,7 +100,6 @@ raw_data <- krsa_read(
   signal_file = params$signal_file,
   signal_saturation = params$saturation_file
 )
-
 ```
 
 ## QC Initial Steps and Groups Assignments
@@ -111,11 +110,11 @@ We will perform a couple of quality control steps to deal with negative values i
 #| label: "quality-control"
 
 # qc processing
-qc_data <- krsa_qc_steps(raw_data) %>% 
+qc_data <- krsa_qc_steps(raw_data) %>%
   mutate(
-  Group = SampleName,
-  SampleName = paste0(Group, "_" , Barcode)
-)
+    Group = SampleName,
+    SampleName = paste0(Group, "_", Barcode)
+  )
 
 groups <- unique(qc_data$Group)
 
@@ -124,7 +123,6 @@ krsa_extractEndPointMaxExp(qc_data, chipType) -> data_pw_max
 
 # extract end level signal values end level @ all exposure times
 krsa_extractEndPoint(qc_data, chipType) -> data_pw
-
 ```
 
 ## QC Steps and Model Fitting
@@ -143,14 +141,12 @@ high_peptides <- krsa_filter_lowPeps(data_pw_max, 5)
 # normalized: the Slope_Transformed values but normalized by Chip/Barcode
 # Grouped: The mean of Slope_Transformed values for all samples within a group
 data_modeled <- krsa_scaleModel(data_pw, high_peptides)
-  
+
 # Filter out peptides weak linear fit
 linear_peptides <- krsa_filter_nonLinear(data_modeled$scaled, 0.8)
 
 # Filter out reference peptides
 clean_peptides <- krsa_filter_ref_pep(linear_peptides)
-
-
 ```
 
 ## Global Signal Intensity
@@ -183,8 +179,6 @@ We will plot violin figures to examine global signal differences between groups/
 
 # Plot a violin figure and facet by the (Group) variable
 krsa_violin_plot(data_modeled$scaled, clean_peptides, "Group")
-
-
 ```
 
 ```{r}
@@ -195,8 +189,6 @@ krsa_violin_plot(data_modeled$scaled, clean_peptides, "Group")
 
 # Plot a violin figure and facet by the (Barcode) variable
 krsa_violin_plot(data_modeled$scaled, clean_peptides, "Barcode")
-
-
 ```
 
 ### Global Heatmaps
@@ -211,7 +203,6 @@ The heatmap represent all the peptides present on the chip except the positive/i
 
 # Generates a heatmap using the modeled normalized data
 krsa_heatmap(data_modeled$normalized, clean_peptides, scale = "row")
-
 ```
 
 ```{r}
@@ -222,7 +213,6 @@ krsa_heatmap(data_modeled$normalized, clean_peptides, scale = "row")
 
 # Generates a heatmap using the modeled grouped data
 krsa_heatmap_grouped(data_modeled$grouped, clean_peptides, scale = "row")
-
 ```
 
 ## Group Comparison
@@ -252,10 +242,12 @@ These *Filtering Parameters* (fold change threshold, QC criteria) can be modifie
 # Also make sure that the label is unique for each block
 
 # Define Groups to be compared
-comparisons <- list(COMP1 = c(groups[1], groups[4]),
-                    COMP2 = c(groups[1], groups[3]),
-                    COMP3 = c(groups[2], groups[4]),
-                    COMP4 = c(groups[4], groups[3]))
+comparisons <- list(
+  COMP1 = c(groups[1], groups[4]),
+  COMP2 = c(groups[1], groups[3]),
+  COMP3 = c(groups[2], groups[4]),
+  COMP4 = c(groups[4], groups[3])
+)
 ```
 
 ```{r}
@@ -348,37 +340,38 @@ cat(res, sep = "\n")
 
 process_data <- function(file) {
   path <- file.path("results", file)
-  
+
   components <- str_split(file, "_", simplify = TRUE)
-  
-  case <- components[1,2]
-  ctrl <- components[1,3]
-  
-  dataset <- read_csv(path) |> 
-    mutate(case = case,
-           control = ctrl) |> 
-    arrange(totalMeanLFC) |> 
-    select(Peptide, totalMeanLFC, LFC_SD, case, control) |> 
-    rename_with(str_to_lower) |> 
+
+  case <- components[1, 2]
+  ctrl <- components[1, 3]
+
+  dataset <- read_csv(path) |>
+    mutate(
+      case = case,
+      control = ctrl
+    ) |>
+    arrange(totalMeanLFC) |>
+    select(Peptide, totalMeanLFC, LFC_SD, case, control) |>
+    rename_with(str_to_lower) |>
     distinct()
 }
 
-file_data <- list.files("results", "STK.csv") |> 
-  map_dfr(process_data) |> 
+file_data <- list.files("results", "STK.csv") |>
+  map_dfr(process_data) |>
   write_csv("results/dpp_all.csv")
 
-file_data |> 
-  mutate(comparison = str_c(case, control, sep = " v ")) |> 
-  select(-case, -control, -lfc_sd) |> 
-  pivot_wider(names_from = comparison, values_from = totalmeanlfc) |> 
+file_data |>
+  mutate(comparison = str_c(case, control, sep = " v ")) |>
+  select(-case, -control, -lfc_sd) |>
+  pivot_wider(names_from = comparison, values_from = totalmeanlfc) |>
   write_csv("results/dpp_all_wide.csv")
 
-filterable <- file_data |> 
-  filter(control == "WT-UT") |> 
-  select(totalmeanlfc, peptide, case) |> 
-  pivot_wider(names_from = case, values_from = totalmeanlfc) |> 
+filterable <- file_data |>
+  filter(control == "WT-UT") |>
+  select(totalmeanlfc, peptide, case) |>
+  pivot_wider(names_from = case, values_from = totalmeanlfc) |>
   write_csv("results/dpp_WT-UT.csv")
-
 ```
 
 # Session Info
