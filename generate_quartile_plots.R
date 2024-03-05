@@ -40,13 +40,13 @@ quartile_figure <- function(df, grouping = "KinaseFamily") {
       }
     } +
     ggplot2::scale_shape_manual(values = c(Yes = 19, No = 1)) +
-    ggplot2::theme(axis.text.x = ggplot::element_text(
+    ggplot2::theme(axis.text.x = ggplot2::element_text(
       angle = 30,
       size = 7.5,
       vjust = 0.7
-    ), axis.ticks = ggplot::element_blank(), legend.position = "bottom") +
+    ), axis.ticks = ggplot2::element_blank(), legend.position = "bottom") +
     ggplot2::labs(x = "", y = "") +
-    ggplot::guides(shape = "none")
+    ggplot2::guides(shape = "none")
 }
 
 generate_quartile_plot <- function(datafile) {
