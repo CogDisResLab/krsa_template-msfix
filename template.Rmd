@@ -24,7 +24,14 @@ params:
 ```{r}
 #| label: "setup"
 #| include: FALSE
-knitr::opts_chunk$set(
+library(KRSA)
+library(knitr)
+library(tidyverse)
+
+library(gt)
+library(furrr)
+
+knitr::opts_chunk$set( # nolint: extraction_operator_linter.
   collapse = TRUE,
   comment = "#>",
   cache = FALSE,
@@ -33,12 +40,6 @@ knitr::opts_chunk$set(
   warning = FALSE
 )
 
-library(KRSA)
-library(knitr)
-library(tidyverse)
-
-library(gt)
-library(furrr)
 
 run_prefix <- "krsa"
 ```
@@ -65,19 +66,22 @@ Designing the placement of the samples on the chips and arrays is important to c
 #| fig-height: 4
 
 tt <- tibble(
-  num = rep(c(3.5, 2.5, 1.5, 0.5), 3),
-  chips = rep(c(2, 5, 8), each = 4),
-  colr = c(rep(1, 12)),
-  nms = rep(LETTERS[1:4], 3)
+  num = rep(c(3.5, 2.5, 1.5, 0.5), 3L),
+  chips = rep(c(2L, 5L, 8L), each = 4L),
+  colr = c(rep(1L, 12L)),
+  nms = rep(LETTERS[1L:4L], 3L)
 )
 rundes <- ggplot() +
-  geom_rect(aes(xmin = 1, xmax = 3, ymin = 0, ymax = 4), fill = "gray30") +
-  geom_rect(aes(xmin = 4, xmax = 6, ymin = 0, ymax = 4), fill = "gray30") +
-  geom_rect(aes(xmin = 7, xmax = 9, ymin = 0, ymax = 4), fill = "gray30") +
-  xlim(0, 10) +
+  geom_rect(aes(xmin = 1L, xmax = 3L, ymin = 0L, ymax = 4L), fill = "gray30") +
+  geom_rect(aes(xmin = 4L, xmax = 6L, ymin = 0L, ymax = 4L), fill = "gray30") +
+  geom_rect(aes(xmin = 7L, xmax = 9L, ymin = 0L, ymax = 4L), fill = "gray30") +
+  xlim(0L, 10L) +
   theme_void()
 
-rundes + geom_point(data = tt, aes(chips, num, color = factor(colr)), size = 13, show.legend = F) +
+rundes + geom_point(
+  data = tt, aes(chips, num, color = factor(colr)),
+  size = 13L, show.legend = FALSE
+) +
   geom_text(data = tt, aes(chips, num, label = nms), size = 1.6) +
   scale_color_manual(values = c("green3", "red3"))
 ```
@@ -95,12 +99,12 @@ The first step will be reading the crosstab view bionavigator files (Median_Sigm
 ```{r}
 #| label: "read-data"
 
-chipType <- params$chip_type
+chipType <- params[["chip_type"]]
 
 # Read crosstab view bionavigator files and tidy data
 raw_data <- krsa_read(
-  signal_file = params$signal_file,
-  signal_saturation = params$saturation_file
+  signal_file = params[["signal_file"]],
+  signal_saturation = params[["saturation_file"]]
 )
 ```
 
@@ -112,19 +116,19 @@ We will perform a couple of quality control steps to deal with negative values i
 #| label: "quality-control"
 
 # qc processing
-qc_data <- krsa_qc_steps(raw_data) %>%
+qc_data <- krsa_qc_steps(raw_data) |>
   mutate(
     Group = SampleName,
     SampleName = paste0(Group, "_", Barcode)
   )
 
-groups <- unique(qc_data$Group)
+groups <- unique(qc_data[["Group"]])
 
 # extract end level signal values @ all max exposure time (100ms)
-krsa_extractEndPointMaxExp(qc_data, chipType) -> data_pw_max
+data_pw_max <- krsa_extractEndPointMaxExp(qc_data, chipType)
 
 # extract end level signal values end level @ all exposure times
-krsa_extractEndPoint(qc_data, chipType) -> data_pw
+data_pw <- krsa_extractEndPoint(qc_data, chipType)
 ```
 
 ## QC Steps and Model Fitting
@@ -135,7 +139,7 @@ We will filter out peptides with low signals. In order to combine the values fro
 #| label: "model"
 
 # Filter out peptides with low signals
-high_peptides <- krsa_filter_lowPeps(data_pw_max, 5)
+high_peptides <- krsa_filter_lowPeps(data_pw_max, 5L)
 
 # Fit the linear model
 # This will produce a list of data frames:
@@ -145,7 +149,7 @@ high_peptides <- krsa_filter_lowPeps(data_pw_max, 5)
 data_modeled <- krsa_scaleModel(data_pw, high_peptides)
 
 # Filter out peptides weak linear fit
-linear_peptides <- krsa_filter_nonLinear(data_modeled$scaled, 0.8)
+linear_peptides <- krsa_filter_nonLinear(data_modeled[["scaled"]], 0.8)
 
 # Filter out reference peptides
 clean_peptides <- krsa_filter_ref_pep(linear_peptides)
@@ -166,7 +170,7 @@ We will plot the coefficient of variation on both the normal and normalized fits
 #| fig-cap: "Coefficient of Variation plotted for each peptide across all 4 groups"
 
 # Plot a CV figure using the modeled normalized data
-krsa_cv_plot(data_modeled$normalized, clean_peptides)
+krsa_cv_plot(data_modeled[["normalized"]], clean_peptides)
 ```
 
 ### Global Violin Plots
@@ -180,7 +184,7 @@ We will plot violin figures to examine global signal differences between groups/
 #| fig-cap: "Violin Plots for signal intensity Distribution Across Groups for all replicates"
 
 # Plot a violin figure and facet by the (Group) variable
-krsa_violin_plot(data_modeled$scaled, clean_peptides, "Group")
+krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Group")
 ```
 
 ```{r}
@@ -190,7 +194,7 @@ krsa_violin_plot(data_modeled$scaled, clean_peptides, "Group")
 #| fig-cap: "Violin Plots for signal intensity Distribution Across Chips for all replicates"
 
 # Plot a violin figure and facet by the (Barcode) variable
-krsa_violin_plot(data_modeled$scaled, clean_peptides, "Barcode")
+krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Barcode")
 ```
 
 ### Global Heatmaps
@@ -204,7 +208,7 @@ The heatmap represent all the peptides present on the chip except the positive/i
 #| fig-width: 6
 
 # Generates a heatmap using the modeled normalized data
-krsa_heatmap(data_modeled$normalized, clean_peptides, scale = "row")
+krsa_heatmap(data_modeled[["normalized"]], clean_peptides, scale = "row")
 ```
 
 ```{r}
@@ -214,7 +218,7 @@ krsa_heatmap(data_modeled$normalized, clean_peptides, scale = "row")
 #| fig-width: 6
 
 # Generates a heatmap using the modeled grouped data
-krsa_heatmap_grouped(data_modeled$grouped, clean_peptides, scale = "row")
+krsa_heatmap_grouped(data_modeled[["grouped"]], clean_peptides, scale = "row")
 ```
 
 ## Group Comparison
@@ -245,10 +249,10 @@ These *Filtering Parameters* (fold change threshold, QC criteria) can be modifie
 
 # Define Groups to be compared
 comparisons <- list(
-  COMP1 = c(groups[1], groups[4]),
-  COMP2 = c(groups[1], groups[3]),
-  COMP3 = c(groups[2], groups[4]),
-  COMP4 = c(groups[4], groups[3])
+  COMP1 = c(groups[[1L]], groups[[4L]]),
+  COMP2 = c(groups[[1L]], groups[[3L]]),
+  COMP3 = c(groups[[2L]], groups[[4L]]),
+  COMP4 = c(groups[[4L]], groups[[3L]])
 )
 ```
 
@@ -261,120 +265,22 @@ comparisons <- list(
 #| fig-height: 6
 #| fig-cap: "Heatmap of pairwise group comparison"
 
-case <- comparisons$COMP1[1]
-ctrl <- comparisons$COMP1[2]
+case <- comparisons$COMP1[[1L]]
+ctrl <- comparisons$COMP1[[2L]]
 random <- "A"
 threshold <- params$threshold
 
-src <- knitr::knit_expand(file = "_comparison.Rmd", case = case, ctrl = ctrl, threshold = threshold, chip = params$chip_type)
+src <- knitr::knit_expand(
+  file = "_comparison.Rmd",
+  case = case, ctrl = ctrl, threshold = threshold,
+  chip = params[["chip_type"]]
+)
 
 res <- knitr::knit_child(text = src, quiet = TRUE)
 
 cat(res, sep = "\n")
 ```
 
-```{r}
-#| results: "asis"
-#| echo: FALSE
-#| include: TRUE
-#| label: "childB"
-#| fig-width: 6
-#| fig-height: 6
-#| fig-cap: "Heatmap of pairwise group comparison"
-
-case <- comparisons$COMP2[1]
-ctrl <- comparisons$COMP2[2]
-random <- "B"
-threshold <- params$threshold
-
-src <- knitr::knit_expand(file = "_comparison.Rmd", case = case, ctrl = ctrl, threshold = threshold, chip = params$chip_type)
-
-res <- knitr::knit_child(text = src, quiet = TRUE)
-
-cat(res, sep = "\n")
-```
-
-```{r}
-#| results: "asis"
-#| echo: FALSE
-#| include: TRUE
-#| label: "childC"
-#| fig-width: 6
-#| fig-height: 6
-#| fig-cap: "Heatmap of pairwise group comparison"
-
-case <- comparisons$COMP3[1]
-ctrl <- comparisons$COMP3[2]
-random <- "C"
-threshold <- params$threshold
-
-src <- knitr::knit_expand(file = "_comparison.Rmd", case = case, ctrl = ctrl, threshold = threshold, chip = params$chip_type)
-
-res <- knitr::knit_child(text = src, quiet = TRUE)
-
-cat(res, sep = "\n")
-```
-
-```{r}
-#| results: "asis"
-#| echo: FALSE
-#| include: TRUE
-#| label: "childD"
-#| fig-width: 6
-#| fig-height: 6
-#| fig-cap: "Heatmap of pairwise group comparison"
-
-case <- comparisons$COMP4[1]
-ctrl <- comparisons$COMP4[2]
-random <- "D"
-threshold <- params$threshold
-
-src <- knitr::knit_expand(file = "_comparison.Rmd", case = case, ctrl = ctrl, threshold = threshold, chip = params$chip_type)
-
-res <- knitr::knit_child(text = src, quiet = TRUE)
-
-cat(res, sep = "\n")
-```
-
-```{r}
-#| label: "fingerprint"
-#| eval: false
-
-process_data <- function(file) {
-  path <- file.path("results", file)
-
-  components <- str_split(file, "_", simplify = TRUE)
-
-  case <- components[1, 2]
-  ctrl <- components[1, 3]
-
-  dataset <- read_csv(path) |>
-    mutate(
-      case = case,
-      control = ctrl
-    ) |>
-    arrange(totalMeanLFC) |>
-    select(Peptide, totalMeanLFC, LFC_SD, case, control) |>
-    rename_with(str_to_lower) |>
-    distinct()
-}
-
-file_data <- list.files("results", "STK.csv") |>
-  map_dfr(process_data) |>
-  write_csv("results/dpp_all.csv")
-
-file_data |>
-  mutate(comparison = str_c(case, control, sep = " v ")) |>
-  select(-case, -control, -lfc_sd) |>
-  pivot_wider(names_from = comparison, values_from = totalmeanlfc) |>
-  write_csv("results/dpp_all_wide.csv")
-
-filterable <- file_data |>
-  filter(control == "WT-UT") |>
-  select(totalmeanlfc, peptide, case) |>
-  pivot_wider(names_from = case, values_from = totalmeanlfc) |>
-  write_csv("results/dpp_WT-UT.csv")
-```
 
 # Session Info
 
