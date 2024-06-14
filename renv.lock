@@ -767,7 +767,7 @@
       "Package": "farver",
       "Version": "2.1.2",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "https://cran.r-project.org",
       "Hash": "680887028577f3fa2a81e410ed0d6e42"
     },
     "fastmap": {
@@ -926,7 +926,7 @@
       "Package": "ggplot2",
       "Version": "3.5.1",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "https://cran.r-project.org",
       "Requirements": [
         "MASS",
         "R",
@@ -1094,7 +1094,7 @@
       "Package": "gtable",
       "Version": "0.3.5",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "https://cran.r-project.org",
       "Requirements": [
         "R",
         "cli",
@@ -1260,7 +1260,7 @@
       "Package": "igraph",
       "Version": "2.0.3",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "https://cran.r-project.org",
       "Requirements": [
         "Matrix",
         "R",
@@ -1592,11 +1592,11 @@
       "Version": "1.4.3",
       "Source": "GitHub",
       "RemoteType": "github",
+      "RemoteHost": "api.github.com",
       "RemoteUsername": "pamgene",
       "RemoteRepo": "pgFCS",
       "RemoteRef": "master",
       "RemoteSha": "2a718f34b4c404a3a9ca0032d784a0020252de4f",
-      "RemoteHost": "api.github.com",
       "Requirements": [
         "combinat",
         "corpcor",
@@ -2299,7 +2299,7 @@
       "Package": "stringi",
       "Version": "1.8.4",
       "Source": "Repository",
-      "Repository": "CRAN",
+      "Repository": "https://cran.r-project.org",
       "Requirements": [
         "R",
         "stats",
