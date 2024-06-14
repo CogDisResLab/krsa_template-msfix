@@ -28,8 +28,8 @@ library(KRSA)
 library(knitr)
 library(tidyverse)
 
-library(gt)
-library(furrr)
+library(gt) # nolint: unused_import_linter.
+library(furrr) # nolint: unused_import_linter.
 
 knitr::opts_chunk$set( # nolint: extraction_operator_linter.
   collapse = TRUE,
@@ -265,10 +265,10 @@ comparisons <- list(
 #| fig-height: 6
 #| fig-cap: "Heatmap of pairwise group comparison"
 
-case <- comparisons$COMP1[[1L]]
-ctrl <- comparisons$COMP1[[2L]]
+case <- comparisons[["COMP1"]][[1L]]
+ctrl <- comparisons[["COMP1"]][[2L]]
 random <- "A"
-threshold <- params$threshold
+threshold <- params[["threshold"]]
 
 src <- knitr::knit_expand(
   file = "_comparison.Rmd",
