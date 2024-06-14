@@ -1,6 +1,6 @@
 r_profile <- file.path(Sys.getenv("HOME"), ".Rprofile")
 
-if (interactive() && file.exists(r_profile)) {
+if (file.exists(r_profile)) {
   source(r_profile) # nolint: undesirable_function_linter.
 }
 
