@@ -41,7 +41,7 @@ uka_files <- list.files("results", "uka", full.names = TRUE)
 
 peptide_files <- list.files("results", "dpp", full.names = TRUE)
 
-comapison_names <- c("KRSA", "UKA", "Peptide")
+comparison_names <- c("KRSA", "UKA", "Peptide")
 
 result <- list(
   krsa_path = krsa_files,
@@ -49,7 +49,7 @@ result <- list(
   peptide_path = peptide_files
 ) |>
   pmap(process_creedenzymatic) |>
-  set_names(comapison_names) |>
+  set_names(comparison_names) |>
   imap_dfr(
     ~ write_csv(
       .x,

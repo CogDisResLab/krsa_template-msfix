@@ -4,7 +4,7 @@ suppressPackageStartupMessages({
   library(purrr)
   library(dplyr)
   library(readr)
-  library(pgUpstream)
+  library(pgUpstream) # nolint: unused_import_linter.
   library(pgFCS) # nolint: unused_import_linter.
   library(pgscales) # nolint: unused_import_linter.
 })
@@ -47,8 +47,8 @@ perform_uka <- function(
     dbWeights = c(iviv = weight_iviv, PhosphoNET = weight_pnet)
   ) |>
     purrr::map(function(x) {
-      x[[aResult]][[1L]] |>
-        dplyr::mutate(mxRank = x[[mxRank]])
+      x[["aResult"]][[1L]] |>
+        dplyr::mutate(mxRank = x[["mxRank"]])
     }) |>
     dplyr::bind_rows() |>
     dplyr::filter(nFeatures >= minimum_set_size) |>
