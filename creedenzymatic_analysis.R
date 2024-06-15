@@ -8,7 +8,7 @@ process_creedenzymatic <- function(krsa_path, uka_path, peptide_path) {
     select(Kinase, Score = AvgZ) |>
     read_krsa(trns = "abs", sort = "desc")
 
-  uka_data <- read_tsv(uka_path, show_col_types = FALSE) |>
+  uka_data <- read_csv(uka_path, show_col_types = FALSE) |>
     select(Kinase = `Kinase Name`, Score = `Median Final score`) |>
     read_uka(trns = "abs", sort = "desc")
 
@@ -41,7 +41,9 @@ uka_files <- list.files("results", "uka", full.names = TRUE)
 
 peptide_files <- list.files("results", "dpp", full.names = TRUE)
 
-comparison_names <- c("KRSA", "UKA", "Peptide")
+comparison_names <- krsa_files |>
+  basename() |>
+  str_extract(".*krsa_table_(.*)\\.csv", 1L)
 
 result <- list(
   krsa_path = krsa_files,
