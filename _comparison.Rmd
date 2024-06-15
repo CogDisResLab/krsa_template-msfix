@@ -18,7 +18,7 @@ data_modeled[["scaled"]] |>
   write_csv(
     file.path(
       "results",
-      "{{run_prefix}}-filtered_peptides_{{case}}_{{ctrl}}-{{chip}}.csv"
+      "{{run_prefix}}-signal_{{case}}_{{ctrl}}-{{chip}}.csv"
     )
   )
 
@@ -32,10 +32,7 @@ differential_phosphorylated_peptides <- krsa_group_diff(
 # save LFC table
 write_csv(
   differential_phosphorylated_peptides,
-  file.path(
-    "results",
-    "{{run_prefix}}-dpp_{{case}}_{{ctrl}}-{{chip}}.csv"
-  )
+  file.path("results", "{{run_prefix}}-dpp_{{case}}_{{ctrl}}-{{chip}}.csv")
 )
 
 # Extract top peptides based on the LFC cutoff using average of LFCs across chips
@@ -63,7 +60,8 @@ After applying the *Filtering Parameters* for this group comparison, only *`r le
 #| fig-cap: "Violin plot of two groups"
 
 # generates a heatmap using the selected groups and peptides
-krsa_heatmap(data_modeled[["normalized"]], significant_peptides[["meanLFC"]][["0.2"]],
+krsa_heatmap(data_modeled[["normalized"]],
+  significant_peptides[["meanLFC"]][["0.2"]],
   groups = c("{{case}}", "{{ctrl}}"), scale = "row"
 )
 ```
@@ -79,7 +77,8 @@ Below, the violin plot visualizes the distribution of selected peptides for the 
 #| fig-cap: "Violin plot of two groups"
 
 # generates a violin plot using the selected groups and peptides
-krsa_violin_plot(data_modeled[["scaled"]], significant_peptides[["meanLFC"]][["0.2"]],
+krsa_violin_plot(data_modeled[["scaled"]],
+  significant_peptides[["meanLFC"]][["0.2"]],
   "Barcode",
   groups = c("{{case}}", "{{ctrl}}")
 )
@@ -96,9 +95,7 @@ This waterfall represents the log2 fold changes between the two groups at each p
 #| fig-cap: "Waterfall Plot to show the distribution of change in peptide phosphorylation"
 
 # generates a waterfall of the log2 fold change values for the selected peptide (top peptides)
-krsa_waterfall(differential_phosphorylated_peptides,
-  lfc_thr = 0.2, byChip = FALSE
-)
+krsa_waterfall(differential_phosphorylated_peptides, lfc_thr = 0.2, byChip = FALSE)
 ```
 
 #### Upstream Kinase Analysis
@@ -140,8 +137,13 @@ mutiple_krsa_outputs <- mutiple_krsa_outputs |>
   map(~ pluck(.x, "KRSA_Table"))
 
 # Tidy output
-df <- data.frame(matrix(unlist(mutiple_krsa_outputs), ncol = max(lengths(mutiple_krsa_outputs)), byrow = TRUE))
-df <- setNames(do.call(rbind.data.frame, mutiple_krsa_outputs), names(mutiple_krsa_outputs[["meanLFC.0.2"]]))
+df <- data.frame(matrix(unlist(mutiple_krsa_outputs),
+  ncol = max(lengths(mutiple_krsa_outputs)), byrow = TRUE
+))
+df <- setNames(
+  do.call(rbind.data.frame, mutiple_krsa_outputs),
+  names(mutiple_krsa_outputs[["meanLFC.0.2"]])
+)
 
 df <- df |>
   rownames_to_column("method") |>
