@@ -43,7 +43,8 @@ peptide_files <- list.files("results", "dpp", full.names = TRUE)
 
 comparison_names <- krsa_files |>
   basename() |>
-  str_extract(".*krsa_table_(.*)\\.csv", 1L)
+  str_replace(fixed("-krsa_table_"), "_") |>
+  str_remove(fixed(".csv"))
 
 result <- list(
   krsa_path = krsa_files,
