@@ -66,7 +66,7 @@ generate_quartile_plot <- function(datafile) {
 }
 
 creedenzymatic_files <- list.files("results", "creedenzymatic") |>
-  set_names(~ str_remove(.x, "_.*")) |>
+  set_names(~ str_extract(.x, "(.*)_creedenzymatic.csv", 1L)) |>
   map(generate_quartile_plot) |>
   imap(~ ggsave(
     str_glue("{.y}-creedenzymatic.png"),
