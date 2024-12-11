@@ -90,7 +90,7 @@ prepare_signal_data <- function(signal_path) {
 ## Perform analysis
 
 signal_files <- list.files("results", "signal", full.names = TRUE) |>
-  set_names(~ .x |> str_extract("krsa-signal_(.*)\\.csv", 1L))
+  set_names(~ .x |> str_extract("-signal_(.*)\\.csv", 1L))
 
 signal_names <- names(signal_files)
 
