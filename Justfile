@@ -1,5 +1,8 @@
 # Justfile for R Analysis Project with renv Integration
 
+# Set options
+set unstable
+
 # Default target when no specific target is specified
 default: all
 
@@ -57,11 +60,9 @@ list:
     @just --list
 
 # Run all tasks in sequence
-all: restore render analysis
+all: render analysis
 
 # Aliases for common tasks
 alias a := all
 alias c := clean
 alias n := new-analysis
-alias u := update
-alias s := snapshot
