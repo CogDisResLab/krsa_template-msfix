@@ -19,6 +19,7 @@ params:
   signal_file: "kinome_data/SignalMinusBackground.txt" # Change the file name to the one you have
   saturation_file: "kinome_data/SignalSaturation.txt" # Change the file name to the one you have
   threshold: 2 # Change the threshold if necessary
+  prefix: "kinome"
 ---
 
 ```{r}
@@ -40,8 +41,6 @@ knitr::opts_chunk$set( # nolint: extraction_operator_linter.
   warning = FALSE
 )
 
-
-run_prefix <- "krsa"
 ```
 
 # Introduction
@@ -98,6 +97,8 @@ The first step will be reading the crosstab view bionavigator files (Median_Sigm
 
 ```{r}
 #| label: "read-data"
+
+run_prefix <- params[["krsa"]]
 
 chipType <- params[["chip_type"]]
 
