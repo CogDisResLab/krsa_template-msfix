@@ -1,49 +1,111 @@
 # KRSA Report and Kinome Analysis Template
 
-This repository includes a series of scripts and other files that make it
-easier and quicker to generate Kinome Analysis using the
-[Cognitive Disorders Research Lab](https://cdrl-ut.org) set of tools.
+## Overview
+
+This repository provides a standardized, reproducible workflow for Kinome Analysis using tools from the [Cognitive Disorders Research Lab](https://cdrl-ut.org).
 
 ## Features
 
-This template allows you to perform the following tasks:
-
-- Generate KRSA reports for a given kinome array experiment dataset
-- Generate UKA results for a given kinome array experiment dataset
-- Generate creedenzymatic results for the experiments
-- Generate Quartile plots for the experiments
-
-In addition, this repository allows for the following:
-
-- Standardizing the location of particular input and output files
-- Allow for easy and predictable management of the data and results
-- Allow for easy publishing of the results in a reproducible manner
+- Generate comprehensive KRSA reports for kinome array experiments
+- Perform Universal Kinase Analysis (UKA)
+- Create Creedenzymatic results
+- Generate detailed quartile plots
+- Standardize data and results management
+- Ensure reproducible research workflows
 
 ## Requirements
 
-Use of this repository requires the following tools to already be installed:
+### Software Prerequisites
 
-1. [`R`](https://www.r-project.org/) -- The language runtime
-1. [`git`](https://git-scm.com/downloads) -- A version control system
-1. [`just`](https://just.systems/) -- A task runner
-1. A text editor or IDE ([`Visual Studio Code`](https://code.visualstudio.com/),
-[`RStudio`](https://posit.co/download/rstudio-desktop/),
-[`Neovim`](https://neovim.io/) etc.)
-1. (For Windows Only) [`Rtools`](https://cran.r-project.org/bin/windows/Rtools/)
-for your version of R.
-1. (Optional) [`radian`](https://github.com/randy3k/radian) -- An alternative R Console
+1. **R** (Statistical Computing)
+   - Download from [R Project Website](https://www.r-project.org/)
+   - Recommended: Latest stable version
 
-## Quickstart
+2. **Git** (Version Control)
+   - Download from [Git Website](https://git-scm.com/downloads)
+   - Ensures proper version tracking
 
-Follow this process for a quick start:
+3. **Just** (Task Runner)
+   - Install via: The installation documentation [Just Documentation](https://just.systems/)
+   - Manages project workflows
 
-1. Use the [`Use Template`] button to generate a copy of the repository in
-your own account.
-2. Clone this repository to your own computer.
-3. Open R in the repository directory.
-4. Run `renv::restore()` in the R Console and install all the dependencies.
-5. Place your `SigmBg` and `SignalSaturation` files in the `kinome_data` folder.
-6. Copy the `template.Rmd` file to your report name.
-7. Change the file paths in the top matter of the `Rmd` file to point
-to the files you just placed.
-8. Run `just all` in the console.
+4. **Text Editor/IDE**
+   Recommended options:
+   - [Visual Studio Code](https://code.visualstudio.com/)
+   - [RStudio](https://posit.co/download/rstudio-desktop/)
+   - [Neovim](https://neovim.io/)
+
+5. **Additional Requirements**
+   - Windows Only: [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
+   - Optional: [Radian](https://github.com/randy3k/radian) (Enhanced R Console)
+
+## Quickstart Guide
+
+### 1. Repository Setup
+
+1. Click "Use Template" to create a new repository
+2. Clone the repository to your local machine
+
+   ```bash
+   git clone <your-repository-url>
+   cd <repository-name>
+   ```
+
+### 2. Environment Preparation
+
+1. Open R in the repository directory
+2. Restore project dependencies
+
+   ```r
+   renv::restore()
+   ```
+
+### 3. Data Preparation
+
+1. Place `SigmBg` and `SignalSaturation` files in the `kinome_data/` directory
+2. Create a new analysis file from the template
+
+   ```bash
+   just new-analysis my_experiment
+   ```
+
+### 4. Configuration
+
+1. Edit the newly created `.Rmd` file
+2. Update file paths in the YAML frontmatter
+3. Set chip type and prefix as needed
+
+### 5. Run Analysis
+
+Execute the complete workflow:
+
+```bash
+just render
+just all
+```
+
+## Available Just Commands
+
+| Command | Description |
+|---------|-------------|
+| `just list` | Show all available commands |
+| `just new-analysis NAME` | Create a new analysis from template |
+| `just render` | Render all Markdown reports |
+| `just uka` | Run Universal Kinase Analysis |
+| `just creeden` | Run Creedenzymatic analysis and generate quartile plots |
+| `just clean` | Remove generated files and artifacts |
+
+## Troubleshooting
+
+- Ensure all dependencies are installed
+- Check R and Just versions
+- Verify data file locations
+
+## License
+
+Everything in this project is licensed under the MIT license except for the `UKA_*`
+files in the `reference_data` folder.
+
+## Contact
+
+In case of any problems, please file an issue
