@@ -21,7 +21,8 @@
    - Linux: using `snap` or your distribution's package manager
    - Windows: Use one of the recommended methods from the
      [website](https://just.systems/man/en/packages.html#windows)
-4. Install recommended IDE (VSCode, RStudio)
+4. Install Quarto CLI from the [Quarto Website](https://quarto.org/docs/download/)
+5. Install recommended IDE (VSCode, RStudio)
    Recommended options:
    - [Visual Studio Code](https://code.visualstudio.com/)
    - [RStudio](https://posit.co/download/rstudio-desktop/)

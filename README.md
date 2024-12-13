@@ -29,13 +29,18 @@ This repository provides a standardized, reproducible workflow for Kinome Analys
    - Install via: The installation documentation [Just Documentation](https://just.systems/)
    - Manages project workflows
 
-4. **Text Editor/IDE**
+4. **Quarto** (Rendering Engine)
+   - Install via: The installers on the [Quarto Website](https://quarto.org/docs/download/)
+   - Handles the conversion of R Markdown files to Markdown with the R code
+   evaluated.
+
+5. **Text Editor/IDE**
    Recommended options:
    - [Visual Studio Code](https://code.visualstudio.com/)
    - [RStudio](https://posit.co/download/rstudio-desktop/)
    - [Neovim](https://neovim.io/)
 
-5. **Additional Requirements**
+6. **Additional Requirements**
    - Windows Only: [Rtools](https://cran.r-project.org/bin/windows/Rtools/)
    - Optional: [Radian](https://github.com/randy3k/radian) (Enhanced R Console)
 
