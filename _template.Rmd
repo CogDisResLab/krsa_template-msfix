@@ -98,7 +98,7 @@ The first step will be reading the crosstab view bionavigator files (Median_Sigm
 ```{r}
 #| label: "read-data"
 
-run_prefix <- params[["krsa"]]
+run_prefix <- params[["prefix"]]
 
 chipType <- params[["chip_type"]]
 
