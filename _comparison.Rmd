@@ -116,10 +116,6 @@ if (params[["chip_type"]] == "STK") {
 }
 
 
-# For parallel computing, load the furrr package:
-# opens multiple R sessions to run faster
-plan(multisession)
-
 # Run the KRSA function across the different sets of peptides using the furrr package for parallel computing
 mutiple_krsa_outputs <- future_map(sigPeps_total, krsa,
   .options = furrr_options(seed = TRUE), return_count = TRUE
@@ -130,8 +126,6 @@ saveRDS(mutiple_krsa_outputs,
     "{{run_prefix}}-multiple_krsa_output_{{case}}_{{ctrl}}_{{chip}}.RDS"
   )
 )
-
-plan(sequential)
 
 mutiple_krsa_outputs <- mutiple_krsa_outputs |>
   map(~ pluck(.x, "KRSA_Table"))
