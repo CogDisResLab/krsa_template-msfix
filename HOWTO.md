@@ -43,6 +43,10 @@
 
 #### 3. R Environment Preparation
 
+> [!NOTE]
+> This is the step that usually takes the most time. If in doubt,
+try running `renv::hydrate` and `renv::update`
+
 1. Open R in the repository directory
 2. Initialize and restore project dependencies
 
@@ -117,6 +121,7 @@
       threshold: 2 # This is cosmetic and is used to mark significant Z scores
       # This is used to identify and manage multiple experiments in the same repository
       prefix: "kinome" 
+      pairwise: FALSE # Set to TRUE if you are comparing one well to another well without replicates
    ```
 
 5. Run the analysis until the group comparison chunk.
@@ -128,7 +133,7 @@
    Thus, it becomes important to find out this information and set up the correct
    comparisons in this report.
 
-   For this reason, it is recommended to run the report chunk by chunk until
+   For this reason, we recommend running the report chunk by chunk until
    the *Group Comparison* chunk.
 
    This should give you the variable `groups` which has the extracted group
@@ -188,9 +193,9 @@ Failing to follow the order may result in cryptic errors.
 
 #### 8. Interpreting Results
 
+- Examine rendered PDF reports
 - Check `results/` for CSV files
 - Review `figures/` for generated plots
-- Examine rendered PDF report(s)
 
 ### Troubleshooting
 

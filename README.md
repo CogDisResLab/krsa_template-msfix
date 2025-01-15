@@ -94,7 +94,7 @@ just all
 | Command | Description |
 |---------|-------------|
 | `just list` | Show all available commands |
-| `just new-analysis NAME` | Create a new analysis from template |
+| `just new-analysis NAME CHIP_TYPE PREFIX` | Create a new analysis from template |
 | `just render` | Render all Markdown reports |
 | `just uka` | Run Universal Kinase Analysis |
 | `just creeden` | Run Creedenzymatic analysis and generate quartile plots |
