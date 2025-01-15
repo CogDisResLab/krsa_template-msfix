@@ -8,14 +8,12 @@ default: all
 
 # Render all Rmd files
 render:
-    #!/usr/bin/env bash
-    # Find Rmd files in the top-level directory, excluding those starting with underscore
-    /usr/bin/env find . -maxdepth 1 -type f -name "*.Rmd" ! -name "_*" | while read -r rmd_file; do
-        if [ -f "$rmd_file" ]; then
-            echo "Rendering $rmd_file"
-            quarto render "$rmd_file"
-        fi
-    done
+    #!/usr/bin/env Rscript
+    rmd_files <- list.files(path = ".", pattern = "^((?!_).)*\\.Rmd$", full.names = TRUE)
+    for (rmd_file in rmd_files) {
+        cat("Rendering", rmd_file, "\n")
+        system2("quarto", c("render", rmd_file))
+    }
 
 # Run specific R script analyses
 uka:
@@ -31,29 +29,24 @@ analysis: uka creeden
 
 # Utility to generate new analysis from template
 new-analysis NAME chiptype='STK' prefix='kinome':
-    #!/usr/bin/env bash
-    # Copy template
-    cp _template.Rmd "{{NAME}}.Rmd"
+    #!/usr/bin/env Rscript
+    template_file <- "_template.Rmd"
+    new_file <- paste0("{{NAME}}.Rmd")
+    file.copy(template_file, new_file)
 
-    # Update chip_type parameter
-    perl -pi -e "s/chip_type:.*$/chip_type: {{chiptype}}/" "{{NAME}}.Rmd"
-
-    # Update prefix parameter
-    perl -pi -e "s/prefix:.*$/prefix: {{prefix}}/" "{{NAME}}.Rmd"
-
+    rmd_lines <- readLines(new_file)
+    rmd_lines <- sub("chip_type:.*$", paste0("chip_type: {{chiptype}}"), rmd_lines)
+    rmd_lines <- sub("prefix:.*$", paste0("prefix: {{prefix}}"), rmd_lines)
+    writeLines(rmd_lines, new_file)
 
 # Clean up generated files and artifacts
 clean:
-    #!/usr/bin/env bash
-    # Use full path to find to bypass potential aliases
-    /usr/bin/env find . -type f \( -name "*.html" -o -name "*.docx" -o -name "*.pdf" \) -delete
-    /usr/bin/env find results/ -type f -name "*.csv" -delete
-    /usr/bin/env find figures/ -type f \( -name "*.png" -o -name "*.svg" \) -delete
-    /usr/bin/env find datastore/ -type f -name "*.RData" -delete
-
-    # Remove cache and freeze directories
-    rm -rf _cache/
-    rm -rf _freeze/
+    #!/usr/bin/env Rscript
+    unlink(list.files(pattern = "\\.(html|docx|pdf)$"), recursive = TRUE)
+    unlink(list.files("results/", pattern = "\\.csv$", full.names = TRUE), recursive = TRUE)
+    unlink(list.files("figures/", pattern = "\\.(png|svg)$", full.names = TRUE), recursive = TRUE)
+    unlink(list.files("datastore/", pattern = "\\.RData$", full.names = TRUE), recursive = TRUE)
+    unlink(c("_cache", "_freeze"), recursive = TRUE)
 
 # List available targets
 list:
