@@ -30,6 +30,7 @@ library(knitr)
 library(tidyverse)
 
 library(gt) # nolint: unused_import_linter.
+library(furrr) # nolint: unused_import_linter.
 
 knitr::opts_chunk$set( # nolint: extraction_operator_linter.
   collapse = TRUE,
