@@ -20,6 +20,7 @@ params:
   saturation_file: "kinome_data/SignalSaturation.txt" # Change the file name to the one you have
   threshold: 2 # Change the threshold if necessary
   prefix: "kinome"
+  pairwise: TRUE
 ---
 
 ```{r}
@@ -40,6 +41,13 @@ knitr::opts_chunk$set( # nolint: extraction_operator_linter.
   message = FALSE,
   warning = FALSE
 )
+
+
+# Modify the prefix if pairwise
+
+if (params$pairwise) {
+  params$prefix <- str_c(params$prefix, "p-w", sep = "_")
+}
 
 ```
 
@@ -169,6 +177,7 @@ We will plot the coefficient of variation on both the normal and normalized fits
 #| fig-width: 6
 #| fig-height: 6
 #| fig-cap: "Coefficient of Variation plotted for each peptide across all 4 groups"
+#| eval: !expr pairwise
 
 # Plot a CV figure using the modeled normalized data
 krsa_cv_plot(data_modeled[["normalized"]], clean_peptides)
