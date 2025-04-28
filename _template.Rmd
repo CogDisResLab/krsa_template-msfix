@@ -20,7 +20,7 @@ params:
   saturation_file: "kinome_data/SignalSaturation.txt" # Change the file name to the one you have
   threshold: 2 # Change the threshold if necessary
   prefix: "kinome"
-  pairwise: TRUE
+  pairwise: FALSE
 ---
 
 ```{r}
@@ -45,8 +45,10 @@ knitr::opts_chunk$set( # nolint: extraction_operator_linter.
 
 # Modify the prefix if pairwise
 
-if (params$pairwise) {
-  params$prefix <- str_c(params$prefix, "p-w", sep = "_")
+prefix <- params[["prefix"]]
+
+if (params[["pairwise"]]) {
+  prefix <- str_c(prefix, "p-w", sep = "_")
 }
 
 ```
@@ -106,7 +108,7 @@ The first step will be reading the crosstab view bionavigator files (Median_Sigm
 ```{r}
 #| label: "read-data"
 
-run_prefix <- params[["prefix"]]
+run_prefix <- prefix
 
 chipType <- params[["chip_type"]]
 
