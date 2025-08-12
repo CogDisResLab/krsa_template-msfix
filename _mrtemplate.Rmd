@@ -17,9 +17,13 @@ toc: true
 params:
   chip_type: "STK" # Change the Chip Type to PTK if needed
   metadata_file: "kinome_data/metadata.txt" # Change the file name to the one you have
+  run_id_columnname: NULL # Change this to match your run_id column name in your metadata file
+  median_sigmb_columnname: NULL # Change this to match your median signal-minus-background filename column name in your metadata file
+  signal_saturation_columnname: NULL # Change this to match your signal saturation filename column name in your metadata file
+  pairwise: FALSE
+  pairing_variable: NULL # If your analysis is pairwise, change this
   threshold: 2 # Change the threshold if necessary
   prefix: "kinome"
-  pairwise: FALSE
 ---
 
 ```{r}
@@ -45,11 +49,13 @@ knitr::opts_chunk$set( # nolint: extraction_operator_linter.
 
 
 # Modify the prefix if pairwise
-
 prefix <- params[["prefix"]]
 
 if (params[["pairwise"]]) {
   prefix <- str_c(prefix, "p-w", sep = "_")
+  if (is.null(params[["pairing_variable"]])) {
+        stop("Pairwise is TRUE: please set the pairing_variable parameter to a valid column name in the metadata file specified in the metadata_file parameter.")
+  }
 }
 
 ```
@@ -108,18 +114,23 @@ The first step will be reading the crosstab view bionavigator files (Median_Sigm
 
 ```{r}
 #| label: "read-data"
-
+source('read_mrmetadata_file.R')
 run_prefix <- prefix
 
+if (params[["paired"]]) {
+    meta_data <- read_metadata_file(params[["metadata_file"]], run_id_columnname=params[["run_id_columnname"]], median_sigmb_columnname=params[["median_sigmb_columnname"]], signal_saturation_columnname=params[["signal_saturation_columnname"]], pairing_variable_columnname=params[["pairing_variable"]])
+} else {
+  meta_data <- read_metadata_file(params[["metadata_file"]], run_id_columnname=params[["run_id_columnname"]], median_sigmb_columnname=params[["median_sigmb_columnname"]], signal_saturation_columnname=params[["signal_saturation_columnname"]])
+}
 chipType <- params[["chip_type"]]
 
+if (params[["paired"]] & !(params[["pairing_variable"]] %in% colnames(meta_data))) {
+  stop("Parameter pairing_variable not found in metadata_file column names! Is the pairing_variable present in colnames(metadata_file) and spelled correctly?")
+}
 
-
-# Read crosstab view bionavigator files and tidy data
-raw_data <- krsa_read(
-  signal_file = params[["signal_file"]],
-  signal_saturation = params[["saturation_file"]]
-)
+raw_data <- meta_data |> group_by(run_id) |>
+  summarize(data=list(map2_df(krsa_read(signal_file=median_sigmb_file,saturation_file=signal_saturation_file)))) |>
+  unnest(data)
 ```
 
 ## QC Initial Steps and Groups Assignments
@@ -167,6 +178,8 @@ linear_peptides <- krsa_filter_nonLinear(data_modeled[["scaled"]], 0.8)
 
 # Filter out reference peptides
 clean_peptides <- krsa_filter_ref_pep(linear_peptides)
+
+
 ```
 
 ## Global Signal Intensity

@@ -40,6 +40,17 @@ new-analysis NAME chiptype='STK' prefix='kinome':
     rmd_lines <- sub("prefix:.*$", paste0("prefix: {{prefix}}"), rmd_lines)
     writeLines(rmd_lines, new_file)
 
+new-mr-analysis NAME chiptype='STK' prefix='kinome':
+    #!/usr/bin/env Rscript
+    template_file <- "_mrtemplate.Rmd"
+    new_file <- paste0("{{NAME}}.Rmd")
+    file.copy(template_file, new_file)
+
+    rmd_lines <- readLines(new_file)
+    rmd_lines <- sub("chip_type:.*$", paste0("chip_type: {{chiptype}}"), rmd_lines)
+    rmd_lines <- sub("prefix:.*$", paste0("prefix: {{prefix}}"), rmd_lines)
+    writeLines(rmd_lines, new_file)
+
 # Clean up generated files and artifacts
 clean:
     #!/usr/bin/env Rscript
