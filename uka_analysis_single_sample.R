@@ -5,9 +5,6 @@ suppressPackageStartupMessages({
   library(dplyr)
   library(readr)
   library(stringr)
-  library(pgUpstream) # nolint: unused_import_linter.
-  library(pgFCS) # nolint: unused_import_linter.
-  library(pgscales) # nolint: unused_import_linter.
 })
 
 ## Load data
