@@ -131,6 +131,8 @@ if (params[["paired"]] & !(params[["pairing_variable"]] %in% colnames(meta_data)
 raw_data <- meta_data |> group_by(run_id) |>
   summarize(data=list(map2_df(krsa_read(signal_file=median_sigmb_file,saturation_file=signal_saturation_file)))) |>
   unnest(data)
+
+stop(paste("raw_data dims:", dim(raw_data)))
 ```
 
 ## QC Initial Steps and Groups Assignments
