@@ -24,3 +24,5 @@
 
 # Ignore PNG image files
 *.png
+
+.DS_Store
