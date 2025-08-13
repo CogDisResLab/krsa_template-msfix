@@ -117,15 +117,19 @@ The first step will be reading the crosstab view bionavigator files (Median_Sigm
 source('read_mrmetadata_file.R')
 run_prefix <- prefix
 
-if (params[["pairwise"]]) {
+if (params[["paired"]]) {
     meta_data <- read_metadata_file(params[["metadata_file"]], run_id_columnname=params[["run_id_columnname"]], median_sigmb_columnname=params[["median_sigmb_columnname"]], signal_saturation_columnname=params[["signal_saturation_columnname"]], pairing_variable_columnname=params[["pairing_variable"]])
 } else {
   meta_data <- read_metadata_file(params[["metadata_file"]], run_id_columnname=params[["run_id_columnname"]], median_sigmb_columnname=params[["median_sigmb_columnname"]], signal_saturation_columnname=params[["signal_saturation_columnname"]])
 }
 chipType <- params[["chip_type"]]
 
+if (params[["paired"]] & !(params[["pairing_variable"]] %in% colnames(meta_data))) {
+  stop("Parameter pairing_variable not found in metadata_file column names! Is the pairing_variable present in colnames(metadata_file) and spelled correctly?")
+}
+
 raw_data <- meta_data |> group_by(run_id) |>
-  summarize(data=list(map2_df(median_sigmb_file,signal_saturation_file, krsa_read))) |>
+  summarize(data=list(map2_df(krsa_read(signal_file=median_sigmb_file,saturation_file=signal_saturation_file)))) |>
   unnest(data)
 
 stop(paste("raw_data dims:", dim(raw_data)))
@@ -140,6 +144,7 @@ We will perform a couple of quality control steps to deal with negative values i
 
 # qc processing
 qc_data <- krsa_qc_steps(raw_data) |>
+  mutate(Barcode = paste0(run_id, "_", Barcode))
   mutate(
     Group = SampleName,
     SampleName = paste0(Group, "_", Barcode)
