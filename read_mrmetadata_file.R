@@ -1,6 +1,5 @@
 # check_mrmetadata_file.R
 library(tidyverse)
-
 read_metadata_file <- function(filepath, pairing_variable_columnname=NULL, run_id_columnname=NULL, median_sigmb_columnname=NULL, signal_saturation_columnname=NULL) {
   tryCatch({
     metadata <- read_csv(filepath)
