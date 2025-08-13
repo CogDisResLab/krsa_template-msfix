@@ -171,10 +171,15 @@ data_matrix_wide <- wide_data_temp |> select(sample_exposure_id, Peptide, Signal
   pivot_wider(names_from = sample_exposure_id, values_from = Signal)
 peptide <- data_matrix_wide$Peptide
 data_matrix_wide <- data_matrix_wide |> select(-Peptide)
+na_indices <- data_matrix_wide |>
+  rowid_to_column("row_index") |> # Add a column for original row index
+  filter(if_any(everything(), is.na)) |> # Filter rows where any column is NA
+  pull(row_index)
 column_names <- colnames(data_matrix_wide)
 sva_data_matrix <- data_matrix_wide |> as.matrix()
+sva_data_matrix <- sva_data_matrix[-na_indices,]
 colnames(sva_data_matrix) <- column_names
-rownames(data_matrix_wide) <- peptide
+rownames(sva_data_matrix) <- peptide[-na_indices]
 mod <- model.matrix(~ExposureTime + Group, data = design_df)
 
 mod0 <- model.matrix(~1, data = design_df)
