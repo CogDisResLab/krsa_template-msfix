@@ -195,7 +195,7 @@ adjusted_data_combat_sva <- ComBat(dat = sva_data_matrix,
                                    prior.plot = FALSE)
 adjusted_data_combat_sva <- as.data.frame(adjusted_data_combat_sva)
 colnames(adjusted_data_combat_sva) <- column_names
-adjusted_data_combat_sva$Peptide <- peptide
+adjusted_data_combat_sva$Peptide <- peptide[-na_indices]
 data_pw <- pivot_longer(adjusted_data_combat_sva, cols=-Peptide, names_to="sample_exposure_id", values_to="Signal") |> left_join(design_df, by="sample_exposure_id") |> select(SampleName, Peptide, ExposureTime, Signal, Barcode, Group, run_id)
 
 ```
