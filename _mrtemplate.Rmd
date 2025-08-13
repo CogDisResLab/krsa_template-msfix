@@ -26,7 +26,6 @@ params:
   prefix: "kinome"
 ---
 
-
 ```{r}
 #| label: "setup"
 #| include: FALSE
@@ -145,11 +144,11 @@ We will perform a couple of quality control steps to deal with negative values i
 qc_data <- krsa_qc_steps(raw_data) |>
   mutate(Barcode=paste0(run_id, "_", Barcode)) |> 
   mutate(
-    Group = SampleName,
-    SampleName = paste0(Group, "_", Barcode)
+    Group = `Tissue status`,
+    SampleName = paste0(`Patient code`, "_", Group, "_", Barcode)
   )
 
-sample_name_to_run_id <- qc_data |> select(SampleName, run_id) |> distinct()
+sample_name_to_run_id <- qc_data |> select(SampleName, run_id, `Patient code`) |> distinct()
 
 groups <- unique(qc_data[["Group"]])
 
@@ -157,14 +156,14 @@ groups <- unique(qc_data[["Group"]])
 data_pw_max <- krsa_extractEndPointMaxExp(qc_data, chipType)
 
 # extract end level signal values end level @ all exposure times
-data_pw <- krsa_extractEndPoint(qc_data, chipType) |> left_join(sample_name_to_run_id, by=c("SampleName")) |> select(SampleName, Peptide, ExposureTime, Signal, Barcode, Group, run_id)
+data_pw <- krsa_extractEndPoint(qc_data, chipType) |> left_join(sample_name_to_run_id, by=c("SampleName")) |> select(SampleName, `Patient code`, Peptide, ExposureTime, Signal, Barcode, Group, run_id)
 
 # Create a unique sample-exposure_time identifier for wide format columns
 wide_data_temp <- data_pw |>
   mutate(sample_exposure_id = paste(SampleName, ExposureTime, sep = "_")) |>
-  select(Peptide, sample_exposure_id, SampleName, ExposureTime, Signal, Group, run_id, Barcode) # Only relevant columns for pivot
+  select(Peptide, sample_exposure_id, SampleName, ExposureTime, Signal, Group, run_id, `Patient code`, Barcode) # Only relevant columns for pivot
 
-design_df <- wide_data_temp |> select(sample_exposure_id, SampleName, ExposureTime, Group, run_id, Barcode) |> distinct()
+design_df <- wide_data_temp |> select(sample_exposure_id, `Patient code`, SampleName, ExposureTime, Group, run_id, Barcode) |> distinct()
 
 # Pivot wider
 data_matrix_wide <- wide_data_temp |> select(sample_exposure_id, Peptide, Signal) |>
@@ -176,21 +175,15 @@ na_indices <- data_matrix_wide |>
   filter(if_any(everything(), is.na)) |> # Filter rows where any column is NA
   pull(row_index)
 column_names <- colnames(data_matrix_wide)
-sva_data_matrix <- data_matrix_wide |> as.matrix()
-sva_data_matrix <- sva_data_matrix[-na_indices,]
-colnames(sva_data_matrix) <- column_names
-rownames(sva_data_matrix) <- peptide[-na_indices]
+data_matrix_wide <- data_matrix_wide |> as.matrix()
+data_matrix_wide <- data_matrix_wide[-na_indices,]
+colnames(data_matrix_wide) <- column_names
+rownames(data_matrix_wide) <- peptide[-na_indices]
 mod <- model.matrix(~ExposureTime + Group, data = design_df)
 
-mod0 <- model.matrix(~1, data = design_df)
-
-svobj <- sva(dat = sva_data_matrix, mod = mod, mod0 = mod0, n.sv = NULL)
-
-mod_with_sva <- cbind(mod, svobj$sv)
-
-adjusted_data_combat_sva <- ComBat(dat = sva_data_matrix,
-                                   batch = as.factor(design_df$run_id),
-                                   mod = mod_with_sva, # Use the design matrix including SVs
+adjusted_data_combat_sva <- ComBat(dat = data_matrix_wide,
+                                   batch = as.factor(design_df$`Barcode`),
+                                   mod = mod, # Use the design matrix including SVs
                                    par.prior = TRUE,
                                    prior.plot = FALSE)
 adjusted_data_combat_sva <- as.data.frame(adjusted_data_combat_sva)
@@ -207,22 +200,25 @@ We will filter out peptides with low signals. In order to combine the values fro
 ```{r}
 #| label: "model"
 # Filter out peptides with low signals
-high_peptides <- krsa_filter_lowPeps(data_pw_max, 5L)
+source('filter_low_peps.R')
+source('nonlinear_checks.R')
+high_peptides <- mr_krsa_filter_lowPeps(data_pw_max, threshold=5L, n_threshold=0.4)
 
 # Fit the linear model
 # This will produce a list of data frames:
 # scaled: the Slope_Transformed values (see above for more info on Slope_Transformed)
 # normalized: the Slope_Transformed values but normalized by Chip/Barcode
 # Grouped: The mean of Slope_Transformed values for all samples within a group
-data_modeled <- krsa_scaleModel(data_pw, high_peptides)
-
+peptides_to_keep <- krsa_scaleModel(data_pw, high_peptides) |> sapply(function(X) {
+                                                                    X |> group_by(Peptide) |> filter(all(!is.na(slope))) |> ungroup() |> pull(Peptide) |> unique()
+                                   }) |> reduce(union)
+data_modeled <- krsa_scaleModel(data_pw, peptides_to_keep)
 # Filter out peptides weak linear fit
-linear_peptides <- krsa_filter_nonLinear(data_modeled[["scaled"]], 0.8)
+linear_peptides <- mr_krsa_filter_nonLinear(data_modeled[["scaled"]], threshold=0.8, n_threshold=0.4)
 
 # Filter out reference peptides
-clean_peptides <- krsa_filter_ref_pep(linear_peptides)
-
-
+# clean_peptides <- krsa_filter_ref_pep(linear_peptides)
+clean_peptides <- krsa_filter_ref_pep(high_peptides)
 ```
 
 ## Global Signal Intensity
@@ -320,10 +316,7 @@ These *Filtering Parameters* (fold change threshold, QC criteria) can be modifie
 
 # Define Groups to be compared
 comparisons <- list(
-  COMP1 = c(groups[[1L]], groups[[4L]]),
-  COMP2 = c(groups[[1L]], groups[[3L]]),
-  COMP3 = c(groups[[2L]], groups[[4L]]),
-  COMP4 = c(groups[[4L]], groups[[3L]])
+  COMP1 = c(groups[[2L]], groups[[1L]])
 )
 ```
 
@@ -342,7 +335,7 @@ random <- "A"
 threshold <- params[["threshold"]]
 
 src <- knitr::knit_expand(
-  file = "_comparison.Rmd",
+  file = "_mrcomparison.Rmd",
   case = case, ctrl = ctrl, threshold = threshold,
   chip = params[["chip_type"]]
 )
