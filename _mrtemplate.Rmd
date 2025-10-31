@@ -31,7 +31,6 @@ params:
 #| label: "setup"
 #| include: FALSE
 if (!is.null(params[["figure_output"]])) dir.create(params[["figure_output"]])
-
 library(KRSA)
 library(knitr)
 library(tidyverse)
@@ -239,17 +238,15 @@ We will plot the coefficient of variation on both the normal and normalized fits
 #| fig-cap: "Coefficient of Variation plotted for each peptide across all 4 groups"
 #| eval: !expr params$pairwise
 
+if(!is.null(params[["figure_output"]])) dir.create(params[["figure_output"]])
 # Plot a CV figure using the modeled normalized data
-figure_folder <- params[["figure_output"]]
-
-if (!is.null(figure_folder)) {
-  ifelse(!dir.exists(figure_folder), dir.create(figure_folder))
-  krsa_cv_plot(data_modeled[["normalized"]], clean_peptides) |> ggsave(filename=paste(figure_folder, "cv_plot.svg", sep="/"))
+if (!is.null(params[["figure_output"]])) {
+  krsa_cv_plot(data_modeled[["normalized"]], clean_peptides) |> ggsave(filename=paste(params[["figure_output"]], "cv_plot.pdf", sep="/"))
   } else {
   krsa_cv_plot(data_modeled[["normalized"]], clean_peptides)
   }
-
 ```
+
 
 ### Global Violin Plots
 
@@ -263,13 +260,13 @@ We will plot violin figures to examine global signal differences between groups/
 
 # Plot a violin figure and facet by the (Group) variable
 
-if (!is.null(figure_folder)) {
-  krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Group") |> ggsave(filename=paste(figure_folder, "violin_plot_bygroup.svg", sep="/"))
+if (!is.null(params[["figure_output"]])) {
+  krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Group") |> ggsave(filename=paste(params[["figure_output"]], "violin_plot_bygroup.pdf", sep="/"))
   } else {
   krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Group")
   }
-
 ```
+
 
 ```{r}
 #| label: "global-violin-plot-by-chip"
@@ -278,13 +275,14 @@ if (!is.null(figure_folder)) {
 #| fig-cap: "Violin Plots for signal intensity Distribution Across Chips for all replicates"
 
 # Plot a violin figure and facet by the (Barcode) variable
-if (!is.null(figure_folder)) {
-  krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Barcode") |> ggsave(filename=paste(figure_folder, "violin_plot_bybarcode.svg", sep="/"))
+if (!is.null(params[["figure_output"]])) {
+  krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Barcode") |> ggsave(filename=paste(params[["figure_output"]], "violin_plot_bybarcode.pdf", sep="/"))
   } else {
   krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Barcode")
   }
 
 ```
+
 
 ### Global Heatmaps
 
@@ -298,9 +296,9 @@ The heatmap represent all the peptides present on the chip except the positive/i
 
 # Generates a heatmap using the modeled normalized data
 nheatmap <- krsa_heatmap(data_modeled[["normalized"]], clean_peptides, scale = "row")
-if (!is.null(figure_folder)) {
+if (!is.null(params[["figure_output"]])) {
   graphics.off()
-  pdf(filename=paste(figure_folder, "normalized_heatmap.pdf", sep="/"))
+  pdf(file = paste(params[["figure_output"]], "normalized_heatmap.pdf", sep="/"))
   grid::grid.newpage()
   grid::grid.draw(nheatmap$gtable)
   dev.off()
@@ -310,6 +308,7 @@ if (!is.null(figure_folder)) {
 }
 
 ```
+
 
 ```{r}
 #| label: "global-signal-heatmap-grouped"
@@ -319,9 +318,9 @@ if (!is.null(figure_folder)) {
 
 # Generates a heatmap using the modeled grouped data
 gheatmap <- krsa_heatmap_grouped(data_modeled[["grouped"]], clean_peptides, scale = "row")
-if (!is.null(figure_folder)) {
+if (!is.null(params[["figure_output"]])) {
   graphics.off()
-  pdf(filename=paste(figure_folder, "normalized_grouped_heatmap.pdf", sep="/"))
+  pdf(file = paste(params[["figure_output"]], "normalized_grouped_heatmap.pdf", sep="/"))
   grid::grid.newpage()
   grid::grid.draw(gheatmap$gtable)
   dev.off()
@@ -329,7 +328,9 @@ if (!is.null(figure_folder)) {
   grid::grid.newpage()
   grid::grid.draw(gheatmap$gtable)
 }
+
 ```
+
 
 ## Group Comparison
 
@@ -378,7 +379,7 @@ random <- "A"
 threshold <- params[["threshold"]]
 
 src <- knitr::knit_expand(
-  file = "_mrcomparison.Rmd",
+  file = "_comparison.Rmd",
   case = case, ctrl = ctrl, threshold = threshold,
   figure_output = params[["figure_output"]],
   chip = params[["chip_type"]]
