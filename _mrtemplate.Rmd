@@ -22,6 +22,7 @@ params:
   signal_saturation_columnname: NULL # Change this to match your signal saturation filename column name in your metadata file
   pairwise: FALSE
   pairing_variable: NULL # If your analysis is pairwise, change this
+  figure_output: NULL
   threshold: 2 # Change the threshold if necessary
   prefix: "kinome"
 ---
@@ -237,7 +238,15 @@ We will plot the coefficient of variation on both the normal and normalized fits
 #| eval: !expr params$pairwise
 
 # Plot a CV figure using the modeled normalized data
-krsa_cv_plot(data_modeled[["normalized"]], clean_peptides)
+figure_folder <- params[["figure_output"]]
+
+if (!is.null(figure_folder)) {
+  ifelse(!dir.exists(figure_folder), dir.create(figure_folder))
+  krsa_cv_plot(data_modeled[["normalized"]], clean_peptides) |> ggsave(filename=paste(figure_folder, "cv_plot.svg", sep="/"))
+  } else {
+  krsa_cv_plot(data_modeled[["normalized"]], clean_peptides)
+  }
+
 ```
 
 ### Global Violin Plots
@@ -251,7 +260,13 @@ We will plot violin figures to examine global signal differences between groups/
 #| fig-cap: "Violin Plots for signal intensity Distribution Across Groups for all replicates"
 
 # Plot a violin figure and facet by the (Group) variable
-krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Group")
+
+if (!is.null(figure_folder)) {
+  krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Group") |> ggsave(filename=paste(figure_folder, "violin_plot_bygroup.svg", sep="/"))
+  } else {
+  krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Group")
+  }
+
 ```
 
 ```{r}
@@ -261,7 +276,12 @@ krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Group")
 #| fig-cap: "Violin Plots for signal intensity Distribution Across Chips for all replicates"
 
 # Plot a violin figure and facet by the (Barcode) variable
-krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Barcode")
+if (!is.null(figure_folder)) {
+  krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Barcode") |> ggsave(filename=paste(figure_folder, "violin_plot_bybarcode.svg", sep="/"))
+  } else {
+  krsa_violin_plot(data_modeled[["scaled"]], clean_peptides, "Barcode")
+  }
+
 ```
 
 ### Global Heatmaps
@@ -275,7 +295,18 @@ The heatmap represent all the peptides present on the chip except the positive/i
 #| fig-width: 6
 
 # Generates a heatmap using the modeled normalized data
-krsa_heatmap(data_modeled[["normalized"]], clean_peptides, scale = "row")
+nheatmap <- krsa_heatmap(data_modeled[["normalized"]], clean_peptides, scale = "row")
+if (!is.null(figure_folder)) {
+  graphics.off()
+  pdf(filename=paste(figure_folder, "normalized_heatmap.pdf", sep="/"))
+  grid::grid.newpage()
+  grid::grid.draw(nheatmap$gtable)
+  dev.off()
+} else {
+  grid::grid.newpage()
+  grid::grid.draw(nheatmap$gtable)
+}
+
 ```
 
 ```{r}
@@ -285,7 +316,17 @@ krsa_heatmap(data_modeled[["normalized"]], clean_peptides, scale = "row")
 #| fig-width: 6
 
 # Generates a heatmap using the modeled grouped data
-krsa_heatmap_grouped(data_modeled[["grouped"]], clean_peptides, scale = "row")
+gheatmap <- krsa_heatmap_grouped(data_modeled[["grouped"]], clean_peptides, scale = "row")
+if (!is.null(figure_folder)) {
+  graphics.off()
+  pdf(filename=paste(figure_folder, "normalized_grouped_heatmap.pdf", sep="/"))
+  grid::grid.newpage()
+  grid::grid.draw(gheatmap$gtable)
+  dev.off()
+} else {
+  grid::grid.newpage()
+  grid::grid.draw(gheatmap$gtable)
+}
 ```
 
 ## Group Comparison
@@ -335,8 +376,9 @@ random <- "A"
 threshold <- params[["threshold"]]
 
 src <- knitr::knit_expand(
-  file = "_mrcomparison.Rmd",
+  file = "_comparison.Rmd",
   case = case, ctrl = ctrl, threshold = threshold,
+  figure_output = params[["figure_output"]],
   chip = params[["chip_type"]]
 )
 
@@ -344,7 +386,6 @@ res <- knitr::knit_child(text = src, quiet = TRUE)
 
 cat(res, sep = "\n")
 ```
-
 
 # Session Info
 

@@ -4,6 +4,8 @@
 #| label: groupDiff{{random}}
 
 # This function will run both QC steps (krsa_filter_lowPeps, krsa_filter_nonLinear) and krsa_filter_ref_pep
+
+figure_folder <- "{{figure_output}}"
 pep_passed_qc <- clean_peptides
 
 data_modeled[["scaled"]] |>
@@ -56,10 +58,23 @@ After applying the *Filtering Parameters* for this group comparison, only *`r le
 #| fig-cap: "Violin plot of two groups"
 
 # generates a heatmap using the selected groups and peptides
-krsa_heatmap(data_modeled[["normalized"]],
+nheatmap <- krsa_heatmap(data_modeled[["normalized"]],
   significant_peptides[["meanLFC"]][["0.2"]],
   groups = c("{{case}}", "{{ctrl}}"), scale = "row"
 )
+
+filename <- paste(
+if (!length(figure_output)==0) {
+  graphics.off()
+  pdf(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_heatmap", sep="/"))
+  grid::grid.newpage()
+  grid::grid.draw(nheatmap$gtable)
+  dev.off()
+}else {
+  grid::grid.newpage()
+  grid::grid.draw(nheatmap$gtable)
+}
+
 ```
 
 #### Violin Plot
@@ -73,11 +88,21 @@ Below, the violin plot visualizes the distribution of selected peptides for the 
 #| fig-cap: "Violin plot of two groups"
 
 # generates a violin plot using the selected groups and peptides
-krsa_violin_plot(data_modeled[["scaled"]],
+
+
+if (!length(figure_output)==0) {
+  krsa_violin_plot(data_modeled[["scaled"]],
   significant_peptides[["meanLFC"]][["0.2"]],
   "Barcode",
-  groups = c("{{case}}", "{{ctrl}}")
-)
+  groups = c("{{case}}", "{{ctrl}}"))
+) |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_violinplot.svg", sep="/"))
+  } else {
+  krsa_violin_plot(data_modeled[["scaled"]],
+  significant_peptides[["meanLFC"]][["0.2"]],
+  "Barcode",
+  groups = c("{{case}}", "{{ctrl}}"))
+  }
+
 ```
 
 #### Waterfall Plot
@@ -91,7 +116,15 @@ This waterfall represents the log2 fold changes between the two groups at each p
 #| fig-cap: "Waterfall Plot to show the distribution of change in peptide phosphorylation"
 
 # generates a waterfall of the log2 fold change values for the selected peptide (top peptides)
-krsa_waterfall(differential_phosphorylated_peptides, lfc_thr = 0.2, byChip = FALSE)
+
+
+if (!length(figure_output)==0) {
+  krsa_waterfall(differential_phosphorylated_peptides, lfc_thr = 0.2, byChip = FALSE)
+ |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_krsawaterfall.svg", sep="/"))
+  } else {
+  krsa_waterfall(differential_phosphorylated_peptides, lfc_thr = 0.2, byChip = FALSE)
+  }
+
 ```
 
 #### Upstream Kinase Analysis
@@ -217,6 +250,14 @@ We will plot the individual and averaged Z scores using both the across and with
 
 # Generates Z scores waterfall plots
 krsa_zscores_plot(AvgZTable2)
+
+if (!length(figure_output)==0) {
+  krsa_zscores_plot(AvgZTable2)
+ |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_krsazscoresplot.svg", sep="/"))
+  } else {
+  krsa_zscores_plot(AvgZTable2)
+  }
+
 ```
 
 #### Reverse KRSA Plot
@@ -230,7 +271,15 @@ We will use the reverse KRSA plot function, to plot the log2 fold change values 
 #| fig-cap: "Kinase Activity summary for each kinase family based on peptide phosphorylation"
 
 # plot the reverse KRSA figure for top kinases to determine their activity levels
-krsa_reverse_krsa_plot(chipCov, differential_phosphorylated_peptides, kinases_hits, 0.2, byChip = FALSE)
+
+
+if (!length(figure_output)==0) {
+  krsa_reverse_krsa_plot(chipCov, differential_phosphorylated_peptides, kinases_hits, 0.2, byChip = FALSE)
+ |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_krsarevplot.svg", sep="/"))
+  } else {
+  krsa_reverse_krsa_plot(chipCov, differential_phosphorylated_peptides, kinases_hits, 0.2, byChip = FALSE)
+  }
+
 ```
 
 #### Coverage Plot
@@ -245,6 +294,14 @@ To view the coverage of kinases across the full list of peptides on the chip, we
 
 # generates a kinase coverage plot
 krsa_coverage_plot(chipCov, AvgZTable2, chipType)
+
+if (!length(figure_output)==0) {
+  krsa_coverage_plot(chipCov, AvgZTable2, chipType)
+ |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_krsacovplot.svg", sep="/"))
+  } else {
+  krsa_coverage_plot(chipCov, AvgZTable2, chipType)
+  }
+
 ```
 
 #### Ball Model Network
@@ -258,6 +315,19 @@ We will view the ball model network function, to generate a model representing t
 
 # Plot the network ball model
 krsa_ball_model(kinases_hits, AvgZTable2, 10L, 2.5, 4.8)
+
+nball <- krsa_ball_model(kinases_hits, AvgZTable2, 10L, 2.5, 4.8)
+
+filename <- paste(
+if (!length(figure_output)==0) {
+  graphics.off()
+  pdf(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_heatmap", sep="/"))
+  plot(nball)
+  dev.off()
+}else {
+  plot(nball)
+}
+
 ```
 
 \newpage
