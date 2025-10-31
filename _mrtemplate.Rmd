@@ -376,7 +376,7 @@ random <- "A"
 threshold <- params[["threshold"]]
 
 src <- knitr::knit_expand(
-  file = "_comparison.Rmd",
+  file = "_mrcomparison.Rmd",
   case = case, ctrl = ctrl, threshold = threshold,
   figure_output = params[["figure_output"]],
   chip = params[["chip_type"]]
