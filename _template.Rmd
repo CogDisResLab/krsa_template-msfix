@@ -27,6 +27,7 @@ params:
 ```{r}
 #| label: "setup"
 #| include: FALSE
+if (!is.null(params[["figure_output"]])) dir.create(params[["figure_output"]])
 library(KRSA)
 library(knitr)
 library(tidyverse)
