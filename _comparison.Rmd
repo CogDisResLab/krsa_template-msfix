@@ -67,7 +67,7 @@ nheatmap <- krsa_heatmap(data_modeled[["normalized"]],
   groups = c("{{case}}", "{{ctrl}}"), scale = "row"
 )
 
-if (!length(figure_folder)==0) {
+if (!nchar(figure_folder)==0) {
   graphics.off()
   pdf(file=paste(figure_folder, "{{case}}_vs_{{ctrl}}_heatmap", sep="/"))
   grid::grid.newpage()
@@ -93,7 +93,7 @@ Below, the violin plot visualizes the distribution of selected peptides for the 
 # generates a violin plot using the selected groups and peptides
 
 
-if (!length(figure_folder)==0) {
+if (!nchar(figure_folder)==0) {
   krsa_violin_plot(data_modeled[["scaled"]],
   significant_peptides[["meanLFC"]][["0.2"]],
   "Barcode",
@@ -119,7 +119,7 @@ This waterfall represents the log2 fold changes between the two groups at each p
 #| fig-cap: "Waterfall Plot to show the distribution of change in peptide phosphorylation"
 
 # generates a waterfall of the log2 fold change values for the selected peptide (top peptides)
-if (!length(figure_folder)==0) {
+if (!nchar(figure_folder)==0) {
   krsa_waterfall(differential_phosphorylated_peptides, lfc_thr = 0.2, byChip = FALSE) |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_krsawaterfall.pdf", sep="/"))
   } else {
   krsa_waterfall(differential_phosphorylated_peptides, lfc_thr = 0.2, byChip = FALSE)
@@ -251,7 +251,7 @@ We will plot the individual and averaged Z scores using both the across and with
 # Generates Z scores waterfall plots
 krsa_zscores_plot(AvgZTable2)
 
-if (!length(figure_folder)==0) {
+if (!nchar(figure_folder)==0) {
   krsa_zscores_plot(AvgZTable2) |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_krsazscoresplot.pdf", sep="/"))
   } else {
   krsa_zscores_plot(AvgZTable2)
@@ -272,7 +272,7 @@ We will use the reverse KRSA plot function, to plot the log2 fold change values 
 # plot the reverse KRSA figure for top kinases to determine their activity levels
 
 
-if (!length(figure_folder)==0) {
+if (!nchar(figure_folder)==0) {
   krsa_reverse_krsa_plot(chipCov, differential_phosphorylated_peptides, kinases_hits, 0.2, byChip = FALSE) |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_krsarevplot.pdf", sep="/"))
   } else {
   krsa_reverse_krsa_plot(chipCov, differential_phosphorylated_peptides, kinases_hits, 0.2, byChip = FALSE)
@@ -293,7 +293,7 @@ To view the coverage of kinases across the full list of peptides on the chip, we
 # generates a kinase coverage plot
 krsa_coverage_plot(chipCov, AvgZTable2, chipType)
 
-if (!length(figure_folder)==0) {
+if (!nchar(figure_folder)==0) {
   krsa_coverage_plot(chipCov, AvgZTable2, chipType) |> ggsave(filename=paste(figure_folder, "{{case}}_vs_{{ctrl}}_krsacovplot.pdf", sep="/"))
   } else {
   krsa_coverage_plot(chipCov, AvgZTable2, chipType)
@@ -313,7 +313,7 @@ We will view the ball model network function, to generate a model representing t
 # Plot the network ball model
 
 
-if (!length(figure_folder)==0) {
+if (!nchar(figure_folder)==0) {
   graphics.off()
   pdf(file=paste(figure_folder, "{{case}}_vs_{{ctrl}}_ball_network.pdf", sep="/"))
   krsa_ball_model(kinases_hits, AvgZTable2, 10L, 2.5, 4.8)
